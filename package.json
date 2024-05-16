@@ -1,0 +1,23 @@
+{
+  "name": "login-button-jatis",
+  "version": "1.0.8",
+  "description": "create a login and logout function, revise - host lino",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "testc": "jest --coverage"
+  },
+  "author": "Atha",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-react": "^7.24.1",
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "jest-fetch-mock": "^3.0.3"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-react"
+    ]
+  }
+}
