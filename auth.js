@@ -3,7 +3,8 @@ const HOST = "http://localhost:8080";
 
 function login(clientId) {
   const sessionCookie = getCookie("session");
-  if (!sessionCookie) {
+  if (sessionCookie == false) {
+    console.log("login process")
     const randomSession = generateRandomCookie("session", 32);
     const loginUrl = `${HOST}/login-bento?client_id=${clientId}&session=${randomSession}`;
     window.open(loginUrl, "_blank");
@@ -23,7 +24,7 @@ function login(clientId) {
                 isTimeOut = false;
                 console.log(
                   "Access token fetched successfully. your token is: " +
-                  tokenReceived["token"]
+                    tokenReceived["token"]
                 );
               }
               attempts++;
@@ -46,6 +47,8 @@ function login(clientId) {
         console.error("Process timed out after 60 seconds.");
       }
     }, 60000);
+  } else {
+    return console.error("previous session still exist");
   }
 }
 
@@ -57,22 +60,25 @@ async function fetchAccessToken(clientId, session) {
       if (response.ok) {
         return response.json();
       } else if (response.status === 404) {
-        console.log("404 error: No token available.");
+        console.error("404 error: No token available.");
         return null; // Return null, so that the caller knows the fetch was unsuccessful
       } else {
         throw new Error(`Unexpected response status: ${response.status}`);
       }
     })
     .catch((error) => {
-      console.log("Fetch failed");
-      throw error
+      console.error("Fetch failed");
+      throw error;
     });
 }
 
-function logout(clientId, host) {
+function logout(clientId) {
   const sessionCookie = getCookie("session");
+  console.log("session " + sessionCookie)
   if (sessionCookie) {
-    fetchLogout(clientId, sessionCookie, host);
+    fetchLogout(clientId, sessionCookie);
+  } else {
+    console.log("session not found");
   }
 }
 
@@ -84,7 +90,7 @@ function getCookie(name) {
       return decodeURIComponent(cookiePair[1]);
     }
   }
-  return null;
+  return false;
 }
 
 function setCookie(name, value, days) {
@@ -105,6 +111,10 @@ function generateRandomCookie(name, days) {
   return randomValue;
 }
 
+function deleteCookie(name) {
+  document.cookie = name + "=; max-age=0; path=/"; // This sets the cookie's max-age to zero seconds, causing it to expire immediately
+}
+
 function fetchLogout(clientId, session) {
   deleteCookie("session");
   deleteCookie("token");
@@ -112,20 +122,26 @@ function fetchLogout(clientId, session) {
     .then((response) => {
       if (response.ok) {
         return;
+      } else {
+        throw new Error("Logout request failed");
       }
     })
     .then((data) => {
-      console.log("successfuly logout");
+      console.log("successfully logged out");
       window.location.reload();
+    })
+    .catch((error) => {
+      console.error("Error during logout:", error);
     });
-}
-
-function deleteCookie(name) {
-  document.cookie = name + "=; max-age=0; path=/"; // This sets the cookie's max-age to zero seconds, causing it to expire immediately
 }
 
 module.exports = {
   login,
-  logout,
   fetchAccessToken,
+  getCookie, // Exporting getCookie
+  setCookie,
+  generateRandomCookie,
+  fetchLogout,
+  deleteCookie,
+  logout
 };
